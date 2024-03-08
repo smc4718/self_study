@@ -22,4 +22,9 @@ public class OrderServiceImpl implements OrderService{
 
         return new Order(memberId, itemName, itemPrice, discountPrice); //바로 윗줄에서 회원불러와서 할인된 금액을 반환해주면 오더 서비스의 역할이 끝난다.
     }
+
+    //테스트 용도
+    public MemberRepository getMemberRepository() {
+        return memberRepository;
+    }
 }
