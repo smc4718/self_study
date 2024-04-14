@@ -3,7 +3,7 @@ package hello.springmvc.basic.requestmapping;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/mapping/users")
+@RequestMapping("/mapping/users")     // /mapping은 다른 강의의 예제들과 구분하기 위해 사용했다.
 public class MappingClassController {
 
     /**
