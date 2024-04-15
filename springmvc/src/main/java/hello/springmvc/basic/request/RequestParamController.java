@@ -1,9 +1,11 @@
 package hello.springmvc.basic.request;
 
+import hello.springmvc.basic.HelloData;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -74,6 +76,20 @@ public class RequestParamController {
     @RequestMapping("/request-param-map")
     public String requestParamMap(@RequestParam Map<String, Object> paramMap) {             //모든 요청 파라미터를 다 받고 싶으면, Map으로해서 요청 파라미터를 다 꺼낼 수 있다.
         log.info("username={}, age={}", paramMap.get("username"), paramMap.get("age"));     //파라미터의 값이 1개가 확실하다면 'Map"을 사용해도 되지만, 그렇지 않다면 'MultiValueMap'을 사용하자. (그러나 보통은 파라미터 값을 1개만 쓰지, 여러개를 쓰는 경우는 잘 없다.)
+        return "ok";
+    }
+
+    @ResponseBody
+    @RequestMapping("/model-attribute-v1")
+    public String modelAttributeV1(@ModelAttribute HelloData helloData) {   //HelloData 객체가 생성되고, 요청 파라미터의 값도 모두 들어가 있다. (강의pdf 참고)
+        log.info("username={}, age={}", helloData.getUsername(), helloData.getAge());
+        return "ok";
+    }
+
+    @ResponseBody
+    @RequestMapping("/model-attribute-v2")
+    public String modelAttributeV2(HelloData helloData) {   //@ModelAttribute 을 생략하는 것도 가능하다.
+        log.info("username={}, age={}", helloData.getUsername(), helloData.getAge());
         return "ok";
     }
 }
