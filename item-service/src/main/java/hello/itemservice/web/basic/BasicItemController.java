@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -69,10 +70,37 @@ public class BasicItemController {
         return "basic/item";
     }
 
-    @PostMapping("/add")
+//    @PostMapping("/add")
     public String addItemV4(Item item) {   //객체 타입이기 때문에 @ModelAttribute 가 자동 적용돼있어서, 클래스명인 Item의 첫 글자만 소문자로 바꿔서 name으로 사용한다.
         itemRepository.save(item);
         return "basic/item";
+    }
+
+//    @PostMapping("/add")
+    public String addItemV5(Item item) {
+        itemRepository.save(item);
+        return "redirect:/basic/items/" + item.getId();
+    }
+
+    @PostMapping("/add")
+    public String addItemV6(Item item, RedirectAttributes redirectAttributes) {
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId()); //itemId가 {itemId}로 들어가게 되고, 밑에 남는 status는 "?status=true" 라고 쿼리 파라미터 형식으로 들어간다.
+        redirectAttributes.addAttribute("status", true);              //그리고 기본적인 url 인코딩 같은 것도 다 해결이 됩니다.
+        return "redirect:/basic/items/{itemId}";
+    }
+
+    @GetMapping("/{itemId}/edit")
+    public String edifForm(@PathVariable Long itemId, Model model) {
+        Item item = itemRepository.findById(itemId);
+        model. addAttribute("item", item);
+        return "basic/editForm";
+    }
+
+    @PostMapping("/{itemId}/edit")
+    public String edif(@PathVariable Long itemId, @ModelAttribute Item item) {
+        itemRepository.update(itemId, item);
+        return "redirect:/basic/items/{itemId}";    //@PathVariable에 있는 걸 여기 있는 {itemId}에서도 쓸 수 있다.
     }
 
     /**
