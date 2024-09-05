@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ItemServiceApplication19 {
+public class ItemServiceApplication17 {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ItemServiceApplication19.class, args);
+		SpringApplication.run(ItemServiceApplication17.class, args);
 	}
 
 }
