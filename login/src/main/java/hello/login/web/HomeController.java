@@ -9,8 +9,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 @Slf4j
 @Controller
@@ -42,7 +44,7 @@ public class HomeController {
         return "loginHome";
     }
 
-    @GetMapping("/")
+//    @GetMapping("/")
     public String homeLoginV2(HttpServletRequest request, Model model) {
 
         //세션 관리자에 저장된 회원 정보 조회
@@ -54,6 +56,40 @@ public class HomeController {
         }
 
         model.addAttribute("member", member);
+        return "loginHome";
+    }
+
+//    @GetMapping("/")
+    public String homeLoginV3(HttpServletRequest request, Model model) {
+
+        HttpSession session = request.getSession(false); //세션은 메모리를 쓰기 때문에, 꼭 필요할 때만 생성해야 한다.
+        if(session == null) {
+            return "home";
+        }
+
+        Member loginMember = (Member)session.getAttribute(SessionConst.LOGIN_MEMBER);
+
+        //세션에 회원 데이터가 없으면 home으로 이동
+        if(loginMember == null) {
+            return "home";
+        }
+
+        //세션이 유지되면 로그인으로 이동
+        model.addAttribute("member", loginMember);
+        return "loginHome";
+    }
+
+    @GetMapping("/")
+    public String homeLoginV3Spring(    //@SessionAttribute = Session에서 Attribute로 세션을 꺼내는 기능 : ↓ 세션을 뒤져서 Member에 있는 attribute를 꺼내가지고 값을 넣어줍니다.
+            @SessionAttribute(name = SessionConst.LOGIN_MEMBER, required = false) Member loginMember, Model model) {
+
+        //세션에 회원 데이터가 없으면 home으로 이동
+        if(loginMember == null) {
+            return "home";
+        }
+
+        //세션이 유지되면 로그인으로 이동
+        model.addAttribute("member", loginMember);
         return "loginHome";
     }
 }
