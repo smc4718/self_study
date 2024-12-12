@@ -1,0 +1,135 @@
+package hello.jdbc.repository;
+
+import hello.jdbc.domain.Member;
+import hello.jdbc.repository.ex.MyDbException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.jdbc.support.JdbcUtils;
+import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
+import org.springframework.jdbc.support.SQLExceptionTranslator;
+
+import javax.sql.DataSource;
+import java.sql.*;
+import java.util.NoSuchElementException;
+
+/**
+ * SQLExceptionTranslator 추가
+ */
+@Slf4j
+public class MemberRepositoryV4_2 implements MemberRepository {
+
+    private final DataSource dataSource;
+    private final SQLExceptionTranslator exTranslator;
+
+    public MemberRepositoryV4_2(DataSource dataSource) {
+        this.dataSource = dataSource;
+        this.exTranslator = new SQLErrorCodeSQLExceptionTranslator(dataSource); //dataSource를 쓰는 이유 : 어떤 db를 쓰는지 스스로 찾기 때문에 필요.
+    }
+
+    @Override
+    public Member save(Member member) {
+        String sql = "insert into member(member_id, money) values (?, ?)";
+
+        Connection con = null;
+        PreparedStatement pstmt = null; //PreparedStatement 는 파라미터를 바인딩 할 수 있는 것.
+
+        try {
+            con = getConnection();
+            pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, member.getMemberId());
+            pstmt.setInt(2, member.getMoney());
+            pstmt.executeUpdate(); //executeUpdate();을 실행하면, 위에 pstmt로 담은 것들이 실제 DB에 실행되게 된다.
+            return member;
+        } catch (SQLException e) {
+            throw exTranslator.translate("save", sql, e);
+        } finally {
+            close(con, pstmt, null);
+        }
+    }
+
+    @Override
+    public Member findById(String memberId) {
+        String sql = "select * from member where member_id = ?";
+
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            con = getConnection();
+            pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, memberId);
+
+            rs = pstmt.executeQuery();
+            if(rs.next()) { //next를 한 번 호출해줘야 실제 데이터가 있는 곳부터 시작을 한다.
+                Member member = new Member();
+                member.setMemberId(rs.getString("member_id"));
+                member.setMoney(rs.getInt("money"));
+                return member;
+            } else {
+                throw new NoSuchElementException("member not found memberId=" + memberId);
+            }
+
+        } catch (SQLException e) {
+            throw exTranslator.translate("findById", sql, e);
+        }  finally {
+            close(con, pstmt, rs);
+        }
+    }
+
+    @Override
+    public void update(String memberId, int money) {
+        String sql = "update member set money = ? where member_id = ?";
+
+        Connection con = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            con = getConnection();
+            pstmt = con.prepareStatement(sql);
+            pstmt.setInt(1, money);
+            pstmt.setString(2, memberId);
+            int resultSize = pstmt.executeUpdate();
+            log.info("resultSize={}", resultSize);
+        } catch (SQLException e) {
+            throw exTranslator.translate("update", sql, e);
+        } finally {
+            close(con, pstmt, null);
+        }
+    }
+
+    @Override
+    public void delete(String memberId) {
+        String sql = "delete from member where member_id=?";
+
+        Connection con = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            con = getConnection();
+            pstmt = con.prepareStatement(sql);
+            pstmt.setString(1, memberId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw exTranslator.translate("delete", sql, e);
+        } finally {
+            close(con, pstmt, null);
+        }
+    }
+
+    private void close(Connection con, Statement stmt, ResultSet rs) {
+        JdbcUtils.closeResultSet(rs);
+        JdbcUtils.closeStatement(stmt);
+        //주의! 트랜잭션 동기화를 사용하려면, DataSourceUtils를 사용해야 한다.
+        DataSourceUtils.releaseConnection(con, dataSource);
+    }
+
+    private Connection getConnection() throws SQLException {
+        //주의! 트랜잭션 동기화를 사용하려면 DataSourceUtils를 사용해야 한다.
+        Connection con = DataSourceUtils.getConnection(dataSource); //dataSource에서 직접 꺼내는 것이 아닌 DataSourceUtils에서 꺼내는 것
+        log.info("get connection={}, class={}", con, con.getClass());
+        return con;
+    }
+
+
+}
