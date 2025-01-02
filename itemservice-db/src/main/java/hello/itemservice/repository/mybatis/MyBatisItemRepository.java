@@ -5,20 +5,22 @@ import hello.itemservice.repository.ItemRepository;
 import hello.itemservice.repository.ItemSearchCond;
 import hello.itemservice.repository.ItemUpdateDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class MyBatisItemRepository implements ItemRepository {
-    //MyBatisItemRepository 는 단순하게 Mapper에 위임하는 기능만 합니다.
 
     private final ItemMapper itemMapper;
 
     @Override
     public Item save(Item item) {
+        log.info("itemMapper class={}", itemMapper.getClass());
         itemMapper.save(item);
         return item;
     }
