@@ -1,7 +1,6 @@
 package hello.itemservice.repository.jpa;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hello.itemservice.domain.Item;
@@ -86,7 +85,7 @@ public class JpaItemRepositoryV3 implements ItemRepository {
                 .fetch();
     }
 
-    private Predicate maxPrice(Integer maxPrice) {
+    private BooleanExpression maxPrice(Integer maxPrice) {
         if (maxPrice != null) {
             return item.price.loe(maxPrice);  // loe = less of equal : 작거나 같다.
         }
